@@ -14,7 +14,11 @@ data_reta <- readxl::read_excel(path = "data/data_perfil_mensal.xlsx", sheet = "
   dplyr::mutate(beta_ibov = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[4]]) |>
   dplyr::mutate(beta_ibov_pvalue = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[19]]) |>
   dplyr::mutate(beta_imab5 = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[5]]) |>
-  dplyr::mutate(beta_imab5_pvalue = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[20]])
+  dplyr::mutate(beta_imab5_pvalue = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[20]]) |>
+  dplyr::mutate(log_returns = log(cota / dplyr::lag(cota))) |>
+  dplyr::mutate(vol = 100*zoo::rollapply(log_returns, 21, stats::sd, fill = NA, align = "right")*252^(1/2)) |>
+  dplyr::mutate(cvar_roll = 100*zoo::rollapply(log_returns, 21, function(x) mean(x[x < quantile(x, 0.01, na.rm = T)]), fill = NA, align = "right")*21^(1/2))
+
 
 data_long <- readxl::read_excel(path = "data/data_perfil_mensal.xlsx", sheet = "long_term") |>
   dplyr::mutate(date = zoo::as.Date(date)) |>
@@ -32,7 +36,12 @@ data_long <- readxl::read_excel(path = "data/data_perfil_mensal.xlsx", sheet = "
   dplyr::mutate(beta_ibov = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[4]]) |>
   dplyr::mutate(beta_ibov_pvalue = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[19]]) |>
   dplyr::mutate(beta_imab5 = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[5]]) |>
-  dplyr::mutate(beta_imab5_pvalue = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[20]])
+  dplyr::mutate(beta_imab5_pvalue = summary(stats::lm(log(r_cota) ~ log(selic) + log(r_cambio) + log(r_ibov) + log(r_imab5)))$coefficients[[20]]) |>
+  dplyr::mutate(log_returns = log(cota / dplyr::lag(cota))) |>
+  dplyr::mutate(vol = 100*zoo::rollapply(log_returns, 21, stats::sd, fill = NA, align = "right")*252^(1/2)) |>
+  dplyr::mutate(log_ret_ibov = log(ibov/dplyr::lag(ibov))) |>
+  dplyr::mutate(vol_ibov = 100*zoo::rollapply(log_ret_ibov, 21, stats::sd, fill = NA, align = "right")*252^(1/2)) |>
+  dplyr::mutate(cvar_roll = 100*zoo::rollapply(log_returns, 21, function(x) mean(x[x < quantile(x, 0.01, na.rm = T)]), fill = NA, align = "right")*21^(1/2))
 
 data_linear_s <- readxl::read_excel(path = "data/data_perfil_mensal.xlsx", sheet = "linear_select") |>
   dplyr::mutate(date = zoo::as.Date(date)) |>
