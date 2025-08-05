@@ -52,3 +52,9 @@ data_linear_s <- readxl::read_excel(path = "data/data_perfil_mensal.xlsx", sheet
   dplyr::mutate(r_idex = idex/dplyr::lag(idex)) |>
   dplyr::mutate(beta_idex = summary(stats::lm(log(r_cota) ~ log(r_idex)))$coefficients[[2]]) |>
   dplyr::mutate(beta_idex_pvalue = summary(stats::lm(log(r_cota) ~ log(r_idex)))$coefficients[[8]])
+
+write.table(data_reta, file = "202507_reta.csv", sep = ";", dec = ",", row.names = F)
+
+write.table(data_long, file = "202507_long.csv", sep = ";", dec = ",", row.names = F)
+
+write.table(data_linear_s, file = "202507_linear_s.csv", sep = ";", dec = ",", row.names = F)
