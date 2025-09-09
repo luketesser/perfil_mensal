@@ -149,3 +149,54 @@ write.table(data_reta, file = "202508_reta.csv", sep = ";", dec = ",", row.names
 write.table(data_long, file = "202508_long.csv", sep = ";", dec = ",", row.names = F)
 
 write.table(data_linear_s, file = "202508_linear_s.csv", sep = ";", dec = ",", row.names = F)
+
+
+# Tables ------------------------------------------------------------------
+
+reta_table <- data_reta |>
+  dplyr::filter(date == dplyr::last(date)) |>
+  dplyr::select(var, cvar, cvar_roll, c(14:21), 23)
+
+long_table <- data_long |>
+  dplyr::filter(date == dplyr::last(date)) |>
+  dplyr::select(var, cvar, cvar_roll, c(14:21), 23)
+
+linear_s_table <- data_linear_s |>
+  dplyr::filter(date == dplyr::last(date)) |>
+  dplyr::select(c(6, 7, 9, 10))
+
+table_data <- dplyr::full_join(reta_table, long_table) |>
+  dplyr::full_join(linear_s_table) |>
+  tibble::add_column(Fundo = c("Reta Alocação", "Long Term LB", "Linear Select"), .before = "var")
+
+table_data |> # 1000 x 320
+  dplyr::mutate(dplyr::across(.cols = where(is.numeric), .fns = ~ round(.x, 4))) |>
+  gt::gt() |>
+  gt::tab_header(title = "Métricas de Risco", subtitle = "Medidas de Risco Selecionadas e Parâmetros de Sensibilidade") |>
+  gt::fmt_number(columns = where(is.numeric), decimals = 4) |>
+  gt::cols_label(
+    Fundo = "Fundo",
+    var = "VaR",
+    cvar = "CVaR",
+    cvar_roll = "Rolling CVaR a.a.",
+    beta_selic = "Beta (Selic)",
+    beta_selic_pvalue = "Beta (Selic) p-valor",
+    beta_cambio = "Beta (FX)",
+    beta_cambio_pvalue = "Beta (FX) p-valor",
+    beta_ibov = "Beta (Ibov)",
+    beta_ibov_pvalue = "Beta (Ibov) p-valor",
+    beta_imab5 = "Beta (IMA-B 5+)",
+    beta_imab5_pvalue = "Beta (IMA-B 5+) p-valor",
+    beta_idex = "Beta Idex CDI",
+    beta_idex = "Beta Idex p-valor",
+    vol  = "Vol"
+  ) |>
+  gt::tab_options(
+    table.font.size = "small",
+    table.border.top.width = gt::px(2),
+    table.border.bottom.width = gt::px(2),
+    heading.align = "center"
+  )
+
+
+
